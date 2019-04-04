@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+SRC_DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+${SRC_DIR}/daemonizer start ${SRC_DIR}/father.php

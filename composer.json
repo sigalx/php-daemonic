@@ -1,0 +1,22 @@
+{
+    "name": "sigalx/php-daemonic",
+    "description": "Simple and powerful tools to create daemons for your own PHP-application",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andrey Shcheglov",
+            "email": "sigalx@sigalx.ru"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "ext-json": "*",
+        "ext-posix": "*",
+        "ext-pcntl": "*",
+        "ext-sysvshm": "*"
+    },
+    "autoload": {
+        "psr-4": {"sigalx\\Daemonic\\": "src/"}
+    }
+}

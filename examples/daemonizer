@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+ACTION=""
+
+if [[ -z "$1" ]];	then
+	echo "Usage: ./daemonic [start|stop] executable-script"
+	exit 0
+else
+	ACTION=$1;
+fi
+
+PHP_SCRIPT=$2
+PHP_SCRIPT_DIR="$( cd "$( dirname "${PHP_SCRIPT}" )" && pwd )"
+PHP_SCRIPT_BASENAME="$( basename "${PHP_SCRIPT}" )"
+USER=$(whoami)
+
+PHP_SCRIPT_PATH=${PHP_SCRIPT_DIR}/${PHP_SCRIPT_BASENAME}
+
+HASH=`/bin/echo -n ${PATH} | /usr/bin/md5sum | /usr/bin/cut -f1 -d" "`
+PID_FILE=/tmp/daemonic-${HASH}.pid
+
+COMMON_ARGS="--make-pidfile --pidfile ${PID_FILE} --chuid ${USER} --chdir ${PHP_SCRIPT_DIR} --verbose"
+
+if [[ ${ACTION} = "start" ]]; then
+    /sbin/start-stop-daemon --start --background ${COMMON_ARGS} --exec /usr/bin/php -- ${PHP_SCRIPT_PATH}
+elif [[ ${ACTION} = "stop" ]]; then
+	/sbin/start-stop-daemon --stop ${COMMON_ARGS} --exec /usr/bin/php -- ${PHP_SCRIPT_PATH}
+else
+	echo "Usage: ./daemonic [start|stop] executable-script"
+fi
+
