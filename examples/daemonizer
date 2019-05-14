@@ -3,7 +3,7 @@
 ACTION=""
 
 if [[ -z "$1" ]];	then
-	echo "Usage: ./daemonic [start|stop] executable-script"
+	echo "Usage: ./daemonizer [start|stop] executable-script"
 	exit 0
 else
 	ACTION=$1;
@@ -26,6 +26,6 @@ if [[ ${ACTION} = "start" ]]; then
 elif [[ ${ACTION} = "stop" ]]; then
 	/sbin/start-stop-daemon --stop ${COMMON_ARGS} --exec /usr/bin/php -- ${PHP_SCRIPT_PATH}
 else
-	echo "Usage: ./daemonic [start|stop] executable-script"
+	echo "Usage: ./daemonizer [start|stop] executable-script"
 fi
 
