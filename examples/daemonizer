@@ -16,7 +16,7 @@ USER=$(whoami)
 
 PHP_SCRIPT_PATH=${PHP_SCRIPT_DIR}/${PHP_SCRIPT_BASENAME}
 
-HASH=`/bin/echo -n ${PATH} | /usr/bin/md5sum | /usr/bin/cut -f1 -d" "`
+HASH=`/bin/echo -n ${PHP_SCRIPT_PATH} | /usr/bin/md5sum | /usr/bin/cut -f1 -d" "`
 PID_FILE=/tmp/daemonic-${HASH}.pid
 
 COMMON_ARGS="--make-pidfile --pidfile ${PID_FILE} --chuid ${USER} --chdir ${PHP_SCRIPT_DIR} --verbose"
