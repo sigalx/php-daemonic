@@ -52,7 +52,9 @@ $daemon
     ->setPhpInterpreter(PHP_BINARY);
 
 if ($daemon instanceof \sigalx\Daemonic\Daemons\GodFatherDaemon && $configFile) {
-    $daemon->setConfigFile($configFile);
+    $daemon
+        ->setConfigFile($configFile)
+        ->setHeartbeatFile('/tmp/daemon-heartbeat-example.run');
 }
 
 if ($daemonInit) {
