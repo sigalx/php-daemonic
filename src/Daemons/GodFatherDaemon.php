@@ -32,6 +32,9 @@ class GodFatherDaemon extends AbstractDaemon
     /** @var string */
     protected $_configFile;
 
+    protected $_heartbeatFile;
+    protected $_hHeartbeat;
+
     protected function _init(): bool
     {
         if (!parent::_init()) {
@@ -45,7 +48,25 @@ class GodFatherDaemon extends AbstractDaemon
         });
         $this->_sleepSeconds = 1;
         $this->_ttl = 86400;
+        if ($this->_heartbeatFile) {
+            if (($heartbeatDir = dirname($this->_heartbeatFile)) && !file_exists($heartbeatDir)) {
+                @mkdir($heartbeatDir, 0777, true);
+            }
+            $this->_hHeartbeat = @fopen($this->_heartbeatFile, 'c+');
+            if ($this->_heartbeatFile && (!$this->_hHeartbeat || !@flock($this->_hHeartbeat, LOCK_EX | LOCK_NB))) {
+                printf("Cannot acquire exclusive access to heartbeat-file (already running?)\n");
+                return false;
+            }
+        }
         return true;
+    }
+
+    protected function _die(bool $exit = true): void
+    {
+        if ($this->_hHeartbeat) {
+            @fclose($this->_hHeartbeat);
+        }
+        parent::_die($exit);
     }
 
     public function setWaitForDie(int $seconds): GodFatherDaemon
@@ -54,9 +75,15 @@ class GodFatherDaemon extends AbstractDaemon
         return $this;
     }
 
-    public function setConfigFile(string $configFile): GodFatherDaemon
+    public function setConfigFile(string $filename): GodFatherDaemon
     {
-        $this->_configFile = $configFile;
+        $this->_configFile = $filename;
+        return $this;
+    }
+
+    public function setHeartbeatFile(string $filename): GodFatherDaemon
+    {
+        $this->_heartbeatFile = $filename;
         return $this;
     }
 
@@ -112,6 +139,11 @@ class GodFatherDaemon extends AbstractDaemon
                 $daemonProcessCount[$daemonName] = 0;
             }
             $daemonProcessCount[$daemonName]++;
+        }
+        if ($this->_hHeartbeat) {
+            @fseek($this->_hHeartbeat, 0);
+            @fwrite($this->_hHeartbeat, date('c') . "\n");
+            @fwrite($this->_hHeartbeat, json_encode($daemonProcessCount, JSON_PRETTY_PRINT));
         }
         foreach ($this->_registeredDaemons as $daemonName => $childInfo) {
             $pc = isset($daemonProcessCount[$daemonName]) ? $daemonProcessCount[$daemonName] : 0;
