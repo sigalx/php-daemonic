@@ -23,16 +23,15 @@ class GodFatherDaemon extends AbstractDaemon
 {
     /** @var string[] */
     protected $_childPids = [];
-
     /** @var GodFatherDaemonInfo[] */
     protected $_registeredDaemons = [];
-
+    /** @var int */
     protected $_waitForDie = 30;
-
     /** @var string */
     protected $_configFile;
-
+    /** @var string */
     protected $_heartbeatFile;
+    /** @var resource */
     protected $_hHeartbeat;
 
     protected function _init(): bool
@@ -140,11 +139,19 @@ class GodFatherDaemon extends AbstractDaemon
             }
             $daemonProcessCount[$daemonName]++;
         }
-        if ($this->_hHeartbeat) {
-            @fseek($this->_hHeartbeat, 0);
-            @fwrite($this->_hHeartbeat, date('c') . "\n");
-            @fwrite($this->_hHeartbeat, json_encode($daemonProcessCount, JSON_PRETTY_PRINT));
-        }
+        @fseek($this->_hHeartbeat, 0);
+        @fwrite($this->_hHeartbeat, @json_encode([
+            'current_time' => date('c'),
+            'daemons' => array_map(function ($daemonName, $workingProcessCount) {
+                return [
+                    'daemon_name' => $daemonName,
+                    'working_processes_count' => $workingProcessCount,
+                ];
+            },
+                array_keys($daemonProcessCount),
+                array_values($daemonProcessCount)
+            ),
+        ]));
         foreach ($this->_registeredDaemons as $daemonName => $childInfo) {
             $pc = isset($daemonProcessCount[$daemonName]) ? $daemonProcessCount[$daemonName] : 0;
             $pd = $childInfo->numberOfProcesses - $pc;
