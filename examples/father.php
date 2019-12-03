@@ -9,6 +9,7 @@ $options = getopt('', [
     'daemon:',
     'config:',
     'filename:',
+    'quiet',
 ]);
 
 require(__DIR__ . '/../vendor/autoload.php');
@@ -20,7 +21,7 @@ if (!empty($options['daemon'])) {
     $daemonName = $options['daemon'];
 }
 
-if ($helloBye) {
+if ($helloBye && !isset($options['quiet'])) {
     echo "Hello\n";
 }
 
@@ -57,6 +58,10 @@ if ($daemon instanceof \sigalx\Daemonic\Daemons\GodFatherDaemon && $configFile) 
         ->setHeartbeatFile('/tmp/daemon-heartbeat-example.run');
 }
 
+if (isset($options['quiet'])) {
+    $daemon->verbose = false;
+}
+
 if ($daemonInit) {
     $fs = [];
     if (is_callable($daemonInit)) {
@@ -74,6 +79,6 @@ if ($daemonInit) {
 
 $daemon->run();
 
-if ($helloBye) {
+if ($helloBye && !isset($options['quiet'])) {
     echo "Bye\n";
 }
