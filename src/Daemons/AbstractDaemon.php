@@ -97,7 +97,7 @@ abstract class AbstractDaemon
             @mkdir($logDir, 0777, true);
         }
         $this->_hLogFile = @fopen($this->_logFile, 'x');
-        if ($this->_logFile && $this->_hLogFile === false) {
+        if ($this->_logFile && !$this->_hLogFile) {
             $this->_talk('has FAILED to initialize log file');
             return false;
         }
@@ -121,7 +121,7 @@ abstract class AbstractDaemon
 
     protected function _log(string $message): void
     {
-        if ($this->_hLogFile === false) {
+        if (!$this->_hLogFile) {
             return;
         }
         fwrite($this->_hLogFile, $message . PHP_EOL);
