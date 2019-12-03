@@ -25,6 +25,12 @@ abstract class AbstractDaemon
     /** @var int */
     protected $_ttl = 21600; // 6 hours
 
+    /** @var int|null */
+    protected $_cyclesBeforeDie;
+
+    /** @var int */
+    protected $_processedCycles = 0;
+
     /** @var string */
     protected $_lockDirectory;
 
@@ -157,6 +163,12 @@ abstract class AbstractDaemon
         return $this;
     }
 
+    public function setCyclesBeforeDie(int $value): AbstractDaemon
+    {
+        $this->_cyclesBeforeDie = $value;
+        return $this;
+    }
+
     public function run(): void
     {
         if (!$this->_pid) {
@@ -170,12 +182,18 @@ abstract class AbstractDaemon
         while ($this->_whileTrue) {
             pcntl_signal_dispatch();
             if ($this->_whileTrue) {
-                if (!$this->_work()) {
+                if ($this->_work()) {
+                    $this->_processedCycles++;
+                } else {
                     usleep(1000000 * $this->_sleepSeconds);
                 }
             }
             if (time() - $this->_runAt > $this->_ttl) {
-                $this->_talk('is going to die');
+                $this->_talk('exceeded his own life time');
+                $this->_whileTrue = false;
+            }
+            if ($this->_cyclesBeforeDie && $this->_processedCycles >= $this->_cyclesBeforeDie) {
+                $this->_talk('exceeded his own life cycles');
                 $this->_whileTrue = false;
             }
         }
