@@ -114,6 +114,10 @@ class GodFatherDaemon extends AbstractDaemon
     {
         $this->_talk("is going to run {$className}...");
         $childPid = AsyncOperation::justRun(function () use ($className) {
+            if ($this->_hHeartbeat) {
+                @fclose($this->_hHeartbeat);
+                $this->_hHeartbeat = null;
+            }
             $execArgs = [
                 $this->_fatherScriptPath,
                 "--daemon={$className}",
@@ -139,19 +143,22 @@ class GodFatherDaemon extends AbstractDaemon
             }
             $daemonProcessCount[$daemonName]++;
         }
-        @fseek($this->_hHeartbeat, 0);
-        @fwrite($this->_hHeartbeat, @json_encode([
-            'current_time' => date('c'),
-            'daemons' => array_map(function ($daemonName, $workingProcessCount) {
-                return [
-                    'daemon_name' => $daemonName,
-                    'working_processes_count' => $workingProcessCount,
-                ];
-            },
-                array_keys($daemonProcessCount),
-                array_values($daemonProcessCount)
-            ),
-        ]));
+        if ($this->_hHeartbeat) {
+            @ftruncate($this->_hHeartbeat, 0);
+            @fseek($this->_hHeartbeat, 0);
+            @fwrite($this->_hHeartbeat, @json_encode([
+                'current_time' => date('c'),
+                'daemons' => array_map(function ($daemonName, $workingProcessCount) {
+                    return [
+                        'daemon_name' => $daemonName,
+                        'working_processes_count' => $workingProcessCount,
+                    ];
+                },
+                    array_keys($daemonProcessCount),
+                    array_values($daemonProcessCount)
+                ),
+            ]));
+        }
         foreach ($this->_registeredDaemons as $daemonName => $childInfo) {
             $pc = isset($daemonProcessCount[$daemonName]) ? $daemonProcessCount[$daemonName] : 0;
             $pd = $childInfo->numberOfProcesses - $pc;
