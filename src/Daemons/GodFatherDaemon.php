@@ -23,14 +23,19 @@ class GodFatherDaemon extends AbstractDaemon
 {
     /** @var string[] */
     protected $_childPids = [];
+
     /** @var GodFatherDaemonInfo[] */
     protected $_registeredDaemons = [];
+
     /** @var int */
     protected $_waitForDie = 30;
+
     /** @var string */
     protected $_configFile;
+
     /** @var string */
     protected $_heartbeatFile;
+
     /** @var resource */
     protected $_hHeartbeat;
 
@@ -45,8 +50,8 @@ class GodFatherDaemon extends AbstractDaemon
         $this->_addSignalHandler(SIGCHLD, function () {
             $this->_handleSigChild();
         });
-        $this->_sleepSeconds = 1;
-        $this->_ttl = 86400;
+        $this->setSleepSeconds(1);
+        $this->setTtl(86400);
         if ($this->_heartbeatFile) {
             if (($heartbeatDir = dirname($this->_heartbeatFile)) && !file_exists($heartbeatDir)) {
                 @mkdir($heartbeatDir, 0777, true);
