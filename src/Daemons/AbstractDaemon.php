@@ -157,6 +157,11 @@ abstract class AbstractDaemon
         return $this;
     }
 
+    public function getLockDirectory(): string
+    {
+        return $this->_lockDirectory;
+    }
+
     public function setTtl(int $ttl): AbstractDaemon
     {
         $this->_ttl = $ttl;
